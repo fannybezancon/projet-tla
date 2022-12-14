@@ -1,3 +1,0 @@
-INDEX VERSION 1.131+C:\xampp8.1.6\htdocs\PROJET TLA L3\projet-tla\projet-tla\.metadata\.plugins\org.eclipse.jdt.core
-2196199803.index
-1067094681.index

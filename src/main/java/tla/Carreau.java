@@ -8,7 +8,7 @@ import javafx.scene.layout.Pane;
 Gère l'affichage d'un carreau, cf. EtatCarreau pour les différents états possibles
 */
 class Carreau {
-    private EtatCarreau etat;
+    private EtatCarreau etats;
     private ImageView imageView = new ImageView();
 
     Carreau(int x, int y, Pane parent) {
