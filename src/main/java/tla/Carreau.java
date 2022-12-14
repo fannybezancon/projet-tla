@@ -9,7 +9,7 @@ Gère l'affichage d'un carreau, cf. EtatCarreau pour les différents états poss
 */
 class Carreau {
     private EtatCarreau etat;
-    private ImageView imageView = new ImageView();;
+    private ImageView imageView = new ImageView();
 
     Carreau(int x, int y, Pane parent) {
         setEtat(EtatCarreau.VIDE);
