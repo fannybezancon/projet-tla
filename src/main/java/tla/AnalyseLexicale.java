@@ -7,11 +7,11 @@ public class AnalyseLexicale {
 	
 	// Table de transition de l'analyse lexicale
 	private static Integer TRANSITIONS[][] = {
-			//            espace    :    {    }     ,    -    >    ;  chiffre  lettre
-			/*  0 */    {      0, 101, 102, 103, 104,   1,      106,       2,      3  },
-			/*  1 */    {                                   105                       },
-			/*  2 */    {    107, 107, 107, 107, 107, 107, 107, 107,       2,    107  },
-			/*  3 */    {    108, 108, 108, 108, 108, 108, 108, 108,       3,      3  }
+			//            espace     :     {     }      ,     -     >     ;  chiffre  lettre
+			/*  0 */    {      0,  101,  102,  103,  104,    1, null,  106,       2,       3  },
+			/*  1 */    {   null, null, null, null, null, null,  105, null,    null,    null  },
+			/*  2 */    {    107,  107,  107,  107,  107,  107,  107,  107,       2,     107  },
+			/*  3 */    {    108,  108,  108,  108,  108,  108,  108,  108,       3,       3  }
 			
 			// 101 acceptation token :
 			// 102 acceptation token {
