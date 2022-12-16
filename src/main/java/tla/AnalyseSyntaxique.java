@@ -1,25 +1,25 @@
 package tla;
 
+import java.util.List;
+
 public class AnalyseSyntaxique {
 
 	private int pos;
 	private List<Token> tokens;
-	private int niveauIndentation;
 	
 	/*
 	effectue l'analyse syntaxique à partir de la liste de tokens
 	et retourne le noeud racine de l'arbre syntaxique abstrait
 	 */
-	public Integer analyse(List<Token> tokens) throws Exception {
-		this.pos = 0;
+	public Noeud analyse(List<Token> tokens) throws Exception {
+		pos = 0;
 		this.tokens = tokens;
-		this.niveauIndentation = 0;
-		Integer res = S();
+		Noeud expr = S();
 		if (pos != tokens.size()) {
 			System.out.println("L'analyse syntaxique s'est terminé avant l'examen de tous les tokens");
 			throw new IncompleteParsingException();
 		}
-		return res;
+		return expr;
 	}
 	
 	/*
@@ -29,19 +29,17 @@ public class AnalyseSyntaxique {
 	S -> A S | B S | epsillon
 
 	 */
-	private Integer S() throws UnexpectedTokenException {
-
+	private Noeud S() throws UnexpectedTokenException {
+		
 		if (getTypeDeToken() == TypeDeToken.plateau ||
 				getTypeDeToken() == TypeDeToken.joueur ||
 				getTypeDeToken() == TypeDeToken.sortie) {
 
 			// production S -> A S
 
-			niveauIndentation++;
-			Integer a = A();
-			niveauIndentation--;
+			Noeud a = A();
 			return S(a);
-		}
+		}		
 		
 		if (getTypeDeToken() == TypeDeToken.murs ||
 				getTypeDeToken() == TypeDeToken.trappes ||
@@ -51,17 +49,14 @@ public class AnalyseSyntaxique {
 
 			// production S -> B S
 
-			niveauIndentation++;
-			Integer b = B();
-			niveauIndentation--;
+			Noeud b = B();
 			return S(b);
 		}
 		
 		if (finAtteinte()) {
 
 			// production S -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		
 		throw new UnexpectedTokenException("plateau, joueur, sortie, murs, trappes, fantomes, porte ou commutateurs attendu");
@@ -75,7 +70,7 @@ public class AnalyseSyntaxique {
 
 	 */
 	
-	private Integer A() throws UnexpectedTokenException {
+	private Noeud A() throws UnexpectedTokenException {
 	
 		if (getTypeDeToken() == TypeDeToken.plateau ||
 				getTypeDeToken() == TypeDeToken.joueur ||
@@ -84,9 +79,12 @@ public class AnalyseSyntaxique {
 			// production A -> D : intVal , intVal ;
 			
 			lireToken();
-			niveauIndentation++;
-			Integer d = D();
-			niveauIndentation--;
+			Noeud s = D();
+
+			if (getTypeDeToken() == TypeDeToken.colon) {
+				lireToken(); //est-ce qu'on devrait pas faire une boucle pour lire tous les tokens qui suivent ?
+				return s;
+			}
 		}
 		throw new UnexpectedTokenException("plateau, joueur ou sortie attendu");
 
@@ -111,9 +109,12 @@ public class AnalyseSyntaxique {
 			// production B -> E } ;
 			
 			lireToken();
-			niveauIndentation++;
-			Integer e = E();
-			niveauIndentation--;
+			Noeud s = E();
+
+			if (getTypeDeToken() == TypeDeToken.rightBrace) {
+				lireToken(); //est-ce qu'on devrait pas faire une boucle pour lire tous les tokens qui suivent ?
+				return s;
+			}
 		}
 		throw new UnexpectedTokenException("murs, trappes, fantomes, portes ou commutateurs attendu");
 
@@ -126,15 +127,13 @@ public class AnalyseSyntaxique {
 	E → murs { M | trappes { T | fantomes { F | portes { P | commutateurs { C
 
 	 */
-	private Integer E() throws UnexpectedTokenException {
+	private Noeud E() throws UnexpectedTokenException {
 		
-		if (getTypeDeToken() == TypeDeToken.murs) {
+		if (getTypeDeToken() == TypeDeToken.murs) { //mur ou leftBrace
 			
 			// production E -> murs { M
-			lireToken();
-			niveauIndentation++;
-			Integer m = M();
-			niveauIndentation--;
+			lireToken();	//non ici il faudrait des Noeud
+			return M();
 		}
 		
 		if (getTypeDeToken() == TypeDeToken.trappes) {
@@ -164,10 +163,12 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.commutateurs) {
 			
 			// production E -> commutateurs { C
-			lireToken();
+			Token t = lireToken();
 			niveauIndentation++;
-			Integer c = C();
+			printToken("commutateurs {");
 			niveauIndentation--;
+			Integer i = Integer.valueOf(t.getValeur());
+			return C(i);
 		}
 		throw new UnexpectedTokenException("murs, trappes, fantomes, portes ou commutateurs attendu");
 	}
@@ -223,8 +224,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production M -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException("intVal ou } attendu");
 	}
@@ -287,8 +287,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production T -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException("intVal attendu");
 	}
@@ -320,8 +319,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production F -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException("intVal ou } attendu");
 	}
@@ -383,8 +381,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production F'' -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException(":, ; ou } attendu");
 	}
@@ -413,8 +410,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production T -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException("intVal attendu");
 	}
@@ -446,8 +442,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production F -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException("intVal, ; ou } attendu");
 	}
@@ -475,8 +470,7 @@ public class AnalyseSyntaxique {
 		if (getTypeDeToken() == TypeDeToken.semicolon) {
 
 			// production F'' -> epsilon
-			Integer i = Integer.valueOf(t.getValeur());
-			return i;
+			return null;
 		}
 		throw new UnexpectedTokenException(", ou ; attendu");
 	}
