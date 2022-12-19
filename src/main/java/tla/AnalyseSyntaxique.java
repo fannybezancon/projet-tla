@@ -445,26 +445,51 @@ public class AnalyseSyntaxique {
 	P→ ident : intVal , intVal : etat ; P | ε 
 
 	 */
-	private Noeud P() throws UnexpectedTokenException {
+	private Noeud P(Noeud n) throws UnexpectedTokenException {
 
+		Noeud n2=new Noeud(TypeDeNoeud.porte);
+		Token t = lireToken();
 		if (getTypeDeToken() == TypeDeToken.ident) {
 
 			// production P→ ident : intVal , intVal : etat ; P
-
-			Token t = lireToken();
-			printToken("ident : intVal , intVal : etat ;");
-			niveauIndentation++;
-			Integer p = P();
-			niveauIndentation--;
-			Integer i = Integer.valueOf(t.getValeur());
-			return i + p;
+			n2.ajout(new Noeud(TypeDeNoeud.ident, t.getValeur()));
+			if (lireToken().getTypeDeToken() != TypeDeToken.colon) {
+				throw new UnexpectedTokenException("':' attendu");
+			}
+			t = lireToken();
+			if (t.getTypeDeToken() != TypeDeToken.intVal) {
+				throw new UnexpectedTokenException("intVal attendu");
+			}
+			n2.ajout(new Noeud(TypeDeNoeud.intVal, t.getValeur()));
+			if (lireToken().getTypeDeToken() != TypeDeToken.comma) {
+				throw new UnexpectedTokenException("',' attendu");
+			}
+			t = lireToken();
+			if (t.getTypeDeToken() != TypeDeToken.intVal) {
+				throw new UnexpectedTokenException("intVal attendu");
+			}
+			n2.ajout(new Noeud(TypeDeNoeud.intVal, t.getValeur()));
+			if (lireToken().getTypeDeToken() != TypeDeToken.colon) {
+				throw new UnexpectedTokenException("':' attendu");
+			}
+			t = lireToken();
+			if (t.getTypeDeToken() != TypeDeToken.etat) {
+				throw new UnexpectedTokenException("etat attendu");
+			}
+			n2.ajout(new Noeud(TypeDeNoeud.etat, t.getValeur()));
+			if (lireToken().getTypeDeToken() != TypeDeToken.semicolon) {
+				throw new UnexpectedTokenException("';' attendu");
+			}
+			n.ajout(n2);
+			return P(n);
 		}
-		if (getTypeDeToken() == TypeDeToken.rightBrace) {
+		else if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production T -> epsilon
-			return null;
+			return n;
+		} else {
+			throw new UnexpectedTokenException("intVal ou '}' attendu");
 		}
-		throw new UnexpectedTokenException("intVal attendu");
 	}
 	
 	/*
@@ -474,29 +499,44 @@ public class AnalyseSyntaxique {
 	C→ intVal , intVal : ident C’ ; C | ε 
 
 	 */
-	private Noeud C() throws UnexpectedTokenException {
+	private Noeud C(Noeud n) throws UnexpectedTokenException {
 
+		Noeud n2 = new Noeud(TypeDeNoeud.commutateur);
+		Token t = lireToken();
 		if (getTypeDeToken() == TypeDeToken.intVal) {
 
 			// production C→ intVal , intVal : ident C’ ; C
-
-			lireToken();
-			niveauIndentation++;
-			Integer c_prime = C_prime();
-			niveauIndentation--;
-
-			if (getTypeDeToken() == TypeDeToken.semicolon) {
-				lireToken();
-				return C(c_prime);
+			n2.ajout(new Noeud(TypeDeNoeud.intVal, t.getValeur()));
+			if (lireToken().getTypeDeToken() != TypeDeToken.comma) {
+				throw new UnexpectedTokenException("',' attendu");
 			}
-			throw new UnexpectedTokenException("; attendu");
+			t = lireToken();
+			if (t.getTypeDeToken() != TypeDeToken.intVal) {
+				throw new UnexpectedTokenException("intVal attendu");
+			}
+			n2.ajout(new Noeud(TypeDeNoeud.intVal, t.getValeur()));
+			if (lireToken().getTypeDeToken() != TypeDeToken.colon) {
+				throw new UnexpectedTokenException("':' attendu");
+			}
+			t = lireToken();
+			if (t.getTypeDeToken() != TypeDeToken.ident) {
+				throw new UnexpectedTokenException("ident attendu");
+			}
+			n2.ajout(new Noeud(TypeDeNoeud.ident, t.getValeur()));
+			n2.ajout(C_prime());
+			if (lireToken().getTypeDeToken() != TypeDeToken.semicolon) {
+				throw new UnexpectedTokenException("';' attendu");
+			}
+			n.ajout(n2);
+			return C(n);	
 		}
-		if (getTypeDeToken() == TypeDeToken.rightBrace) {
+		else if (getTypeDeToken() == TypeDeToken.rightBrace) {
 
 			// production F -> epsilon
-			return null;
+			return n;
+		} else {
+			throw new UnexpectedTokenException("intVal, ; ou } attendu");
 		}
-		throw new UnexpectedTokenException("intVal, ; ou } attendu");
 	}
 	
 	/*
@@ -506,25 +546,29 @@ public class AnalyseSyntaxique {
 	C’→ , ident C’ | ε 
 
 	 */
-	private Integer C_prime(Integer i) throws UnexpectedTokenException {
+	private void C_prime(Noeud n_commutateurs) throws UnexpectedTokenException {
 
+		Noeud n_commutateur = new Noeud(TypeDeNoeud.commutateur);
+		Token t = lireToken();
 		if (getTypeDeToken() == TypeDeToken.comma) {
 
 			// production C’→ , ident C’
-
-			Token t = lireToken();
-			printToken(", ident");
-			niveauIndentation++;
-			Integer c_prime = C_prime();
-			niveauIndentation--;
-			return i + c_prime;
+			n_commutateur.ajout(new Noeud(TypeDeNoeud.comma, t.getValeur()));
+			t = lireToken();
+			if (t.getTypeDeToken() != TypeDeToken.intVal) {
+				throw new UnexpectedTokenException("intVal attendu");
+			}
+			n_commutateurs.ajout(new Noeud(TypeDeNoeud.intVal, t.getValeur()));
+			C_prime(n_commutateurs ,n_commutateur);
+			n_commutateurs.ajout(n_commutateur);
 		}
-		if (getTypeDeToken() == TypeDeToken.semicolon) {
+		else if (getTypeDeToken() == TypeDeToken.semicolon) {
 
 			// production F'' -> epsilon
-			return null;
+			
+		} else {
+			throw new UnexpectedTokenException(", ou ; attendu");
 		}
-		throw new UnexpectedTokenException(", ou ; attendu");
 	}
 	
 	
@@ -562,16 +606,6 @@ public class AnalyseSyntaxique {
 			pos++;
 			return t;
 		}
-	}
-
-	/*
-	 * Affiche le token t avec un certain niveau d'identation
-	 */
-	private void printToken(String s) {
-		for(int i=0;i<niveauIndentation;i++) {
-			System.out.print("      ");
-		}
-		System.out.println(s);
 	}
 
 }
