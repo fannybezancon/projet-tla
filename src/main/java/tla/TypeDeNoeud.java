@@ -6,6 +6,6 @@ public enum TypeDeNoeud {
 	ident, intVal,
 	direction, axe,
 	etat,
-	murs, trappes, fantomes, portes, commutateurs,
-	mur, trappe, fantome, fantomeMouvements, fantomeMouvement
+	murs, trappes, fantomes, fantomeMouvements, portes, commutateurs, commutateur_identifiants,
+	mur,  trappe,  fantome,  fantomeMouvement,  porte,  commutateur,
 }
