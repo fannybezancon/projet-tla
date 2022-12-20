@@ -99,7 +99,26 @@ public class AnalyseLexicale {
 				if(e==105) tokens.add(new Token(TypeDeToken.arrow));
 				if(e==106) tokens.add(new Token(TypeDeToken.semicolon));
 				if(e==107) { tokens.add(new Token(TypeDeToken.intVal, buf)); retourArriere();}
-				if(e==108) { tokens.add(new Token(TypeDeToken.ident, buf)); retourArriere();}
+				if(e==108) {
+					if(buf.equals("H")) tokens.add(new Token(TypeDeToken.axe, buf));
+					else if(buf.equals("V")) tokens.add(new Token(TypeDeToken.axe, buf));
+					else if(buf.equals("on")) tokens.add(new Token(TypeDeToken.etat, buf));
+					else if(buf.equals("off")) tokens.add(new Token(TypeDeToken.etat, buf));
+					else if(buf.equals("haut")) tokens.add(new Token(TypeDeToken.direction, buf));
+					else if(buf.equals("bas")) tokens.add(new Token(TypeDeToken.direction, buf));
+					else if(buf.equals("gauche")) tokens.add(new Token(TypeDeToken.direction, buf));
+					else if(buf.equals("droite")) tokens.add(new Token(TypeDeToken.direction, buf));
+					else if(buf.equals("plateau")) tokens.add(new Token(TypeDeToken.plateau));
+					else if(buf.equals("joueur")) tokens.add(new Token(TypeDeToken.joueur));
+					else if(buf.equals("sortie")) tokens.add(new Token(TypeDeToken.sortie));
+					else if(buf.equals("murs")) tokens.add(new Token(TypeDeToken.murs));
+					else if(buf.equals("trappes")) tokens.add(new Token(TypeDeToken.trappes));
+					else if(buf.equals("fantomes")) tokens.add(new Token(TypeDeToken.fantomes));
+					else if(buf.equals("portes")) tokens.add(new Token(TypeDeToken.portes));
+					else if(buf.equals("commutateurs")) tokens.add(new Token(TypeDeToken.commutateurs));
+					else tokens.add(new Token(TypeDeToken.ident, buf));
+					retourArriere();
+				}
 				
 				// un état d'acceptation ayant été atteint, retourne à l'état 0
 				etat = 0;
