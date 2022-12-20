@@ -18,7 +18,7 @@ public class testAnalyseSyntaxique {
 				"};\n" +
 				"trappes{\n" +
 				"    4,4->4,2:bas;\n" +
-				"    1,5->4,5:haut;\n" +
+				"    1,6->4,6:haut;\n" +
 				"};\n" +
 				"fantomes{\n" +
 				"    2,5{\n" +

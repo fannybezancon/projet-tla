@@ -12,6 +12,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
+import java.util.List;
+
 import static tla.Direction.*;
 
 class Plateau {
@@ -19,8 +21,8 @@ class Plateau {
     final String message = "r : redémarrer la partie / q : quitter pour le menu";
 
     final static int LARGEUR_CARREAU = 32; // dimension des cotés d'un carreau en nombre de pixel
-    final static int LARGEUR_PLATEAU = 20; // largeur du plateau en nombre de carreau
-    final static int HAUTEUR_PLATEAU = 14; // hauteur du plateau en nombre de carreau
+    static int LARGEUR_PLATEAU = 20; // largeur du plateau en nombre de carreau (par défaut)
+    static int HAUTEUR_PLATEAU = 14; // hauteur du plateau en nombre de carreau (par défaut)
 
     // grille
 
@@ -71,6 +73,15 @@ class Plateau {
 
     void start() {
 
+        // initialisation de la grille
+        Plateau.LARGEUR_PLATEAU = niveau.LARGEUR_PLATEAU;
+        Plateau.HAUTEUR_PLATEAU = niveau.HAUTEUR_PLATEAU;
+
+        pane.setPrefSize(
+                Plateau.LARGEUR_PLATEAU * Plateau.LARGEUR_CARREAU,
+                Plateau.HAUTEUR_PLATEAU * Plateau.LARGEUR_CARREAU
+        );
+
         // message en bas de la fenêtre
 
         label.setText(message);
@@ -81,6 +92,7 @@ class Plateau {
 
         // création des carreaux
 
+        System.out.println("Création des carreaux: Hauteur = " + HAUTEUR_PLATEAU + ", Largeur = " + LARGEUR_PLATEAU);
         for(int y = 0; y < HAUTEUR_PLATEAU; y++) {
             for(int x = 0; x < LARGEUR_PLATEAU; x++) {
                 carreaux[y* LARGEUR_PLATEAU + x] = new Carreau(x, y, pane);
@@ -89,16 +101,12 @@ class Plateau {
 
         // placement des murs et des sorties
 
-        char[] ch = niveau.INIT_CARREAUX.toCharArray();
+        carreaux[niveau.X_SORTIE + niveau.Y_SORTIE * LARGEUR_PLATEAU].setEtat(EtatCarreau.SORTIE);
 
-        for(int i = 0; i<ch.length; i++) {
-            switch (ch[i]) {
-                case '#':
-                    carreaux[i].setEtat(EtatCarreau.MUR);
-                    break;
-                case '*':
-                    carreaux[i].setEtat(EtatCarreau.SORTIE);
-            }
+        for(List<Integer> mur: niveau.murs) {
+            int x = mur.get(0);
+            int y = mur.get(1);
+            carreaux[y * LARGEUR_PLATEAU + x].setEtat(EtatCarreau.MUR);
         }
 
 
@@ -120,8 +128,8 @@ class Plateau {
 
         // position initiale du joueur
 
-        joueur_x = 0;
-        joueur_y = 0;
+        joueur_x = niveau.INIT_X_JOUEUR;
+        joueur_y = niveau.INIT_Y_JOUEUR;
 
         // placement visuel du joueur
 
@@ -131,9 +139,13 @@ class Plateau {
 
         children.add(imageViewJoueur);
 
-        // placement des portes fermées selon l'état des commutateurs
+        // placement des portes fermées
 
-        niveau.hookApresDeplacement(this);
+        for(List<Integer> porte: niveau.portes) {
+            int x = porte.get(0);
+            int y = porte.get(1);
+            carreaux[y * LARGEUR_PLATEAU + x].setEtat(EtatCarreau.PORTE_FERMEE);
+        }
 
         // passe à l'état 'jeu en cours'
 
@@ -164,7 +176,7 @@ class Plateau {
         if (transition != null && transition.getStatus() != Animation.Status.STOPPED) return;
 
         // recherche si ce déplacement actionne une trappe
-        Trappe trappe = niveau.TRAPPES.stream()
+        Trappe trappe = niveau.trappes.stream()
                 .filter(t ->
                         t.getX() == joueur_x && t.getY() == joueur_y && t.getDirection().equals(direction)
                 )
