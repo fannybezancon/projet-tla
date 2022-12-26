@@ -1,4 +1,5 @@
 package tla;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,12 +19,17 @@ public class Interpreteur {
     public Object interpreter(Noeud n) {
         switch (n.getTypeDeNoeud()) {
             case niveau:
-                interpreter(n.enfant(0));
-                if (n.nombreEnfants() > 1) {
-                    interpreter(n.enfant(1));
+                // interprete de préférence dans l'ordre: plateau, joueur, sortie, murs, trappes, fantomes, portes, commutateurs
+                List<TypeDeNoeud> ordre = Arrays.asList(TypeDeNoeud.plateau, TypeDeNoeud.joueur, TypeDeNoeud.sortie, TypeDeNoeud.murs, TypeDeNoeud.trappes, TypeDeNoeud.fantomes, TypeDeNoeud.portes, TypeDeNoeud.commutateurs);
+                for (TypeDeNoeud type : ordre) {
+                    for (int i = 0; i < n.nombreEnfants(); i++) {
+                        Noeud enfant = n.enfant(i);
+                        if (enfant.getTypeDeNoeud() == type) {
+                            interpreter(enfant);
+                        }
+                    }
                 }
-
-                break;
+                return niveau;
             case joueur:
                 if(n.nombreEnfants() == 2) {
                     int x = (int) interpreter(n.enfant(0))-1 ;
@@ -102,9 +108,9 @@ public class Interpreteur {
             case commutateur:
                 break;
             default:
-                System.out.println("Erreur: noeud de type " + n.getTypeDeNoeud() + " non reconnu");
+               return null;
         }
-        return niveau;
+        return null;
     }
 
 
