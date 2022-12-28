@@ -1,4 +1,5 @@
 package tla;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +76,13 @@ public class Interpreteur {
 
                 break;
             case commutateur_identifiants:
-                break;
+            	ArrayList<List<Integer>> listeporte = new ArrayList();
+            	for (int i = 0; i < n.nombreEnfants(); i++) {
+            		interpreter(n.enfant(i)); 
+            		listeporte.add((List<Integer>) interpreter(n.enfant(i)));            		
+                    }
+                 return listeporte;
+            	
             case mur:
                 if (n.nombreEnfants() > 2) {
                     int x = (int) interpreter(n.enfant(0)) - 1;
@@ -98,15 +105,29 @@ public class Interpreteur {
                 }
                 break;
             case trappe:
+            	Trappe trappe1 = new Trappe((int)interpreter(n.enfant(0))-1,(int)interpreter(n.enfant(1))-1,
+            			(Direction)interpreter(n.enfant(4)), (int)interpreter(n.enfant(3))-1, (int)interpreter(n.enfant(2))-1);
+                niveau.trappes.add(trappe1);
                 break;
+                
             case fantome:
+            	Fantome fantome1 = new Fantome((int)interpreter(n.enfant(0))-1,(int)interpreter(n.enfant(1))-1, 
+            			(List<Direction>)interpreter(n.enfant(2)));
+                niveau.fantomes.add(fantome1);
                 break;
+          
             case fantomeMouvement:
                 break;
             case porte:
+            	
                 break;
             case commutateur:
-                break;
+            	Commutateur commutateur1 = new Commutateur((int)interpreter(n.enfant(0)),(int)interpreter(n.enfant(1)));
+                niveau.commutateurs.add(commutateur1);
+                for (List<Integer> porte : (List<List<Integer>>) interpreter(n.enfant(2))) {
+                	commutateur1.addPorte(porte);
+                }
+            	break;
             default:
                return null;
         }
