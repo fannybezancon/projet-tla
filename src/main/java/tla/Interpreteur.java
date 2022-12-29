@@ -6,16 +6,11 @@ import java.util.List;
 
 public class Interpreteur {
 
-    private Niveau niveau;
-
-
-    // stocke les variables lues au clavier durant l'interprétation
-    private HashMap<String, Integer> variables;
+    private HashMap<String, List<Integer>> portes = new HashMap<>();
+    private Niveau niveau = new Niveau();
 
     public Interpreteur() {
-        variables = new HashMap<>();
     }
-
 
     public Object interpreter(Noeud n) {
         switch (n.getTypeDeNoeud()) {
@@ -41,8 +36,8 @@ public class Interpreteur {
                 break;
             case plateau:
                 if(n.nombreEnfants() == 2) {
-                    int L = (int) interpreter(n.enfant(0));
-                    int H = (int) interpreter(n.enfant(1));
+                    int L = (int) interpreter(n.enfant(0))-1;
+                    int H = (int) interpreter(n.enfant(1))-1;
                     niveau.LARGEUR_PLATEAU = L;
                     niveau.HAUTEUR_PLATEAU = H;
                 }
@@ -56,10 +51,21 @@ public class Interpreteur {
                 }
                 break;
             case ident:
-                return variables.get(n.getValeur());
+                return portes.get(n.getValeur());
             case intVal:
-                return Integer.valueOf(n.getValeur());
+                return Integer.parseInt(n.getValeur());
             case direction:
+                switch (n.getValeur()) {
+                    case "haut":
+                        return Direction.HAUT;
+                    case "bas":
+                        return Direction.BAS;
+                    case "gauche":
+                        return Direction.GAUCHE;
+                    case "droite":
+                        return Direction.DROITE;
+                }
+                break;
             case axe:
             case etat:
                 return String.valueOf(n.getValeur());
@@ -73,22 +79,17 @@ public class Interpreteur {
                 }
                 break;
             case fantomeMouvements:
-            	ArrayList<List<Integer>> listeporte = new ArrayList();
-            	for (int i = 0; i < n.nombreEnfants(); i++) {
-            		interpreter(n.enfant(i)); 
-            		listeporte.add((List<Integer>) interpreter(n.enfant(i)));            		
-                    }
-                 return listeporte;
-
-                break;
+                List<Direction> listedirection = new ArrayList();
+                for (int i = 0; i < n.nombreEnfants(); i++) {
+                    listedirection.addAll((List<Direction>) interpreter(n.enfant(i)));
+                }
+                return listedirection;
             case commutateur_identifiants:
-            	List<Direction> listedirection = new ArrayList();
-            	for (int i = 0; i < n.nombreEnfants(); i++) {
-            		
-            		listedirection.addAll((List<Direction>) interpreter(n.enfant(i)));            		
-                    }
-                 return listedirection;
-            	
+                ArrayList<List<Integer>> listeporte = new ArrayList();
+                for (int i = 0; i < n.nombreEnfants(); i++) {
+                    listeporte.add((List<Integer>) interpreter(n.enfant(i)));
+                }
+                return listeporte;
             case mur:
                 if (n.nombreEnfants() > 2) {
                     int x = (int) interpreter(n.enfant(0)) - 1;
@@ -115,13 +116,11 @@ public class Interpreteur {
             			(Direction)interpreter(n.enfant(4)), (int)interpreter(n.enfant(3))-1, (int)interpreter(n.enfant(2))-1);
                 niveau.trappes.add(trappe1);
                 break;
-                
             case fantome:
             	Fantome fantome1 = new Fantome((int)interpreter(n.enfant(0))-1,(int)interpreter(n.enfant(1))-1, 
             			(List<Direction>)interpreter(n.enfant(2)));
                 niveau.fantomes.add(fantome1);
                 break;
-          
             case fantomeMouvement:
             	List<Direction> listeDirection = new ArrayList();
             	if (n.nombreEnfants()==2){
@@ -129,11 +128,11 @@ public class Interpreteur {
             		int nb = (int) interpreter(n.enfant(1));
             		for (int i = 0; i < nb; i++) { 
             			listeDirection.add(direction); 
-                        } 
+                    }
             	}
-            		else {
-            			Direction direction = (Direction) interpreter(n.enfant(0));
-            			listeDirection.add(direction); 
+                else {
+                    Direction direction = (Direction) interpreter(n.enfant(0));
+                    listeDirection.add(direction);
             	}           	
                 break;
             case porte:
@@ -141,28 +140,28 @@ public class Interpreteur {
             		String ident = n.enfant(0).getValeur();
                     int x = (int) interpreter(n.enfant(1)) - 1;
                     int y = (int) interpreter(n.enfant(2)) - 1;
-                    boolean etat = (boolean) interpreter(n.enfant(3)); 
-                    if(etat==true) {
+                    String etat = (String) interpreter(n.enfant(3));
+                    if(etat.equals("on")) {
                     	niveau.portes.add(List.of(x,y));
-               	    }   	
-                   
+               	    }
 					if (!portes.containsKey(ident)) {
-                    portes.put(ident, new ArrayList<>());
-                    portes.get(ident).add(x);
-                    portes.get(ident).add(y);
+                        portes.put(ident, new ArrayList<>());
+                        portes.get(ident).add(x);
+                        portes.get(ident).add(y);
                     }
             	}
                 break;
             case commutateur:
-            	Commutateur commutateur1 = new Commutateur((int)interpreter(n.enfant(0)),(int)interpreter(n.enfant(1)));
+            	Commutateur commutateur1 = new Commutateur((int)interpreter(n.enfant(0))-1,(int)interpreter(n.enfant(1))-1);
                 niveau.commutateurs.add(commutateur1);
                 for (List<Integer> porte : (List<List<Integer>>) interpreter(n.enfant(2))) {
                 	commutateur1.addPorte(porte);
                 }
             	break;
             default:
-               return null;
+                System.out.println("Erreur d'interpretation");
+                return null;
         }
         return null;
-        }
+    }
 }
