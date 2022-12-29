@@ -79,23 +79,24 @@ public class Main extends Application {
 
         Plateau plateau = new Plateau(borderPane);
         
-        /*for (int i = 0; i < btnsNiveaux.size(); i++) {
-    		int finalI = i;      	
+        for (int i = 0; i < btnsNiveaux.size(); i++) {
+    		int finalI = i;
         	btnsNiveaux.get(i).setOnAction(event -> {
-        
+
         	// affiche le panneau racine du jeu (à la place du panneau de menu)
         	scene.setRoot(borderPane);
 
         	// affecte un object correspondant au niveau choisi
-        	plateau.setNiveau(new Interpreteur.interpreter(noeuds_racine.get(finalI)));
-        	
+            Interpreteur interpreteur = new Interpreteur();
+        	plateau.setNiveau((Niveau) interpreteur.interpreter(noeuds_racine.get(finalI)));
+
         	// démarre le jeu
         	plateau.start();
 
         	// ajuste la taille de la fenêtre
         	primaryStage.sizeToScene();
         	});
-        }*/
+        }
 
         // gestion du clavier
 

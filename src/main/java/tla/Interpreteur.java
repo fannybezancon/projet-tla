@@ -36,8 +36,8 @@ public class Interpreteur {
                 break;
             case plateau:
                 if(n.nombreEnfants() == 2) {
-                    int L = (int) interpreter(n.enfant(0))-1;
-                    int H = (int) interpreter(n.enfant(1))-1;
+                    int L = (int) interpreter(n.enfant(0));
+                    int H = (int) interpreter(n.enfant(1));
                     niveau.LARGEUR_PLATEAU = L;
                     niveau.HAUTEUR_PLATEAU = H;
                 }
@@ -113,7 +113,7 @@ public class Interpreteur {
                 break;
             case trappe:
             	Trappe trappe1 = new Trappe((int)interpreter(n.enfant(0))-1,(int)interpreter(n.enfant(1))-1,
-            			(Direction)interpreter(n.enfant(4)), (int)interpreter(n.enfant(3))-1, (int)interpreter(n.enfant(2))-1);
+            			(Direction)interpreter(n.enfant(4)), (int)interpreter(n.enfant(2))-1, (int)interpreter(n.enfant(3))-1);
                 niveau.trappes.add(trappe1);
                 break;
             case fantome:
@@ -133,8 +133,8 @@ public class Interpreteur {
                 else {
                     Direction direction = (Direction) interpreter(n.enfant(0));
                     listeDirection.add(direction);
-            	}           	
-                break;
+            	}
+                return listeDirection;
             case porte:
             	if (n.nombreEnfants()==4) {
             		String ident = n.enfant(0).getValeur();
