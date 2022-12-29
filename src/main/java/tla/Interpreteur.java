@@ -73,15 +73,21 @@ public class Interpreteur {
                 }
                 break;
             case fantomeMouvements:
-
-                break;
-            case commutateur_identifiants:
             	ArrayList<List<Integer>> listeporte = new ArrayList();
             	for (int i = 0; i < n.nombreEnfants(); i++) {
             		interpreter(n.enfant(i)); 
             		listeporte.add((List<Integer>) interpreter(n.enfant(i)));            		
                     }
                  return listeporte;
+
+                break;
+            case commutateur_identifiants:
+            	List<Direction> listedirection = new ArrayList();
+            	for (int i = 0; i < n.nombreEnfants(); i++) {
+            		
+            		listedirection.addAll((List<Direction>) interpreter(n.enfant(i)));            		
+                    }
+                 return listedirection;
             	
             case mur:
                 if (n.nombreEnfants() > 2) {
@@ -117,9 +123,35 @@ public class Interpreteur {
                 break;
           
             case fantomeMouvement:
+            	List<Direction> listeDirection = new ArrayList();
+            	if (n.nombreEnfants()==2){
+            		Direction direction = (Direction) interpreter(n.enfant(0));
+            		int nb = (int) interpreter(n.enfant(1));
+            		for (int i = 0; i < nb; i++) { 
+            			listeDirection.add(direction); 
+                        } 
+            	}
+            		else {
+            			Direction direction = (Direction) interpreter(n.enfant(0));
+            			listeDirection.add(direction); 
+            	}           	
                 break;
             case porte:
-            	
+            	if (n.nombreEnfants()==4) {
+            		String ident = n.enfant(0).getValeur();
+                    int x = (int) interpreter(n.enfant(1)) - 1;
+                    int y = (int) interpreter(n.enfant(2)) - 1;
+                    boolean etat = (boolean) interpreter(n.enfant(3)); 
+                    if(etat==true) {
+                    	niveau.portes.add(List.of(x,y));
+               	    }   	
+                   
+					if (!portes.containsKey(ident)) {
+                    portes.put(ident, new ArrayList<>());
+                    portes.get(ident).add(x);
+                    portes.get(ident).add(y);
+                    }
+            	}
                 break;
             case commutateur:
             	Commutateur commutateur1 = new Commutateur((int)interpreter(n.enfant(0)),(int)interpreter(n.enfant(1)));
@@ -132,7 +164,5 @@ public class Interpreteur {
                return null;
         }
         return null;
-    }
-
-
+        }
 }
