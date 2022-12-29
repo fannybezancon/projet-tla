@@ -1,5 +1,11 @@
 package tla;
 
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,17 +22,50 @@ public class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException {
 
+    	ArrayList<String> files_niveaux = new ArrayList<>();
+    	File[] files = new File("src/main/resources/niveaux").listFiles();
+    	for (File file : files) {
+    	    if (file.isFile()) {
+    	        files_niveaux.add(new String(Main.class.getResourceAsStream("/niveaux/" + file.getName()).readAllBytes()));
+    	    }
+    	}
+  
+    	//test analyse lexicale
+    	System.out.println("debut du test d'analyse lexicale");
+		try {
+			for(String i: files_niveaux) {
+				List<Token> tokens = new AnalyseLexicale().analyse(i);
+			}
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+		}
+		System.out.println();
+		
+		//test analyse syntaxique + récupérer le noeud racine donné par l'analyse syntaxique de chaque niveau
+		ArrayList<Noeud> noeuds_racine = new ArrayList<>();
+		System.out.println("test analyse syntaxique");
+		try {
+			for(String i: files_niveaux) {
+				List<Token> tokens = new AnalyseLexicale().analyse(i);
+				Noeud racine = new AnalyseSyntaxique().analyse(tokens);
+				noeuds_racine.add(racine);
+			}
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+		}
+		System.out.println();		
+		
+		
         // fenêtre principale et panneau de menu
-
         GridPane menuPane = new GridPane();
-        Button btnNiveau1 = new Button("niveau 1");
-        menuPane.add(btnNiveau1, 0, 1);
-        Button btnNiveau2 = new Button("niveau 2");
-        menuPane.add(btnNiveau2, 0, 2);
-        Button btnNiveau3 = new Button("niveau 3");
-        menuPane.add(btnNiveau3, 0, 3);
+        ArrayList<Button> btnsNiveaux = new ArrayList<>();
+        for (int i = 0; i < noeuds_racine.size(); i++) {
+        	Button btnNiveau = new Button("niveau "+(i+1));
+        	btnsNiveaux.add(btnNiveau);
+        	menuPane.add(btnNiveau, 0, i);
+        }
         ImageView imageView = new ImageView(LibrairieImages.imgJoueurGrand);
         menuPane.add(imageView, 1, 0, 1, 5);
 
@@ -39,34 +78,24 @@ public class Main extends Application {
         BorderPane borderPane = new BorderPane();
 
         Plateau plateau = new Plateau(borderPane);
+        
+        /*for (int i = 0; i < btnsNiveaux.size(); i++) {
+    		int finalI = i;      	
+        	btnsNiveaux.get(i).setOnAction(event -> {
+        
+        	// affiche le panneau racine du jeu (à la place du panneau de menu)
+        	scene.setRoot(borderPane);
 
-        btnNiveau1.setOnAction(event -> {
-            // affiche le panneau racine du jeu (à la place du panneau de menu)
-            scene.setRoot(borderPane);
+        	// affecte un object correspondant au niveau choisi
+        	plateau.setNiveau(new Interpreteur.interpreter(noeuds_racine.get(finalI)));
+        	
+        	// démarre le jeu
+        	plateau.start();
 
-            // affecte un object correspondant au niveau choisi
-            plateau.setNiveau(new Niveau1());
-
-            // démarre le jeu
-            plateau.start();
-
-            // ajuste la taille de la fenêtre
-            primaryStage.sizeToScene();
-        });
-
-        btnNiveau2.setOnAction(event -> {
-            scene.setRoot(borderPane);
-            plateau.setNiveau(new Niveau2());
-            plateau.start();
-            primaryStage.sizeToScene();
-        });
-
-        btnNiveau3.setOnAction(event -> {
-            scene.setRoot(borderPane);
-            plateau.setNiveau(new Niveau3());
-            plateau.start();
-            primaryStage.sizeToScene();
-        });
+        	// ajuste la taille de la fenêtre
+        	primaryStage.sizeToScene();
+        	});
+        }*/
 
         // gestion du clavier
 
